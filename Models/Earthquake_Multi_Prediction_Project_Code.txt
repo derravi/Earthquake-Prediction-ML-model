@@ -1,0 +1,308 @@
+# ==================== Cell 1 ====================
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.metrics import r2_score, accuracy_score
+import pickle
+
+
+# ==================== Cell 2 ====================
+df = pd.read_csv('Data_Sheet/earthquake_1995-2023.csv')
+df.head()
+
+
+# ==================== Cell 3 ====================
+#Null values 
+
+df.isna().sum()
+
+# ==================== Cell 4 ====================
+df.info()
+
+# ==================== Cell 5 ====================
+df['alert'] = df['alert'].fillna(df['alert'].mode()[0])
+df["location"] = df["location"].fillna("Unknown")
+df['location'] = df['location'].fillna('Unknown')
+df['country'] = df['country'].fillna('Unknown')
+
+df['dmin'] = round(df['dmin'],3)
+df['depth'] = round(df['depth'],2)
+
+# ==================== Cell 6 ====================
+df['date_time'] = pd.to_datetime(df['date_time'], errors='coerce')
+
+df['year'] = df['date_time'].dt.year
+df['month'] = df['date_time'].dt.month
+df['day'] = df['date_time'].dt.day
+df['hour'] = df['date_time'].dt.hour
+df['minute'] = df['date_time'].dt.minute
+
+df.drop(columns=['date_time'], inplace=True)
+
+
+# ==================== Cell 7 ====================
+categorical_columns = ['title','alert','net','magType','continent','country','location','tsunami']
+
+encoders = {}
+
+for col in categorical_columns:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col].astype(str))
+    encoders[col] = le
+
+
+
+# ==================== Cell 8 ====================
+features = [
+    'title',    'cdi',    'mmi',    'net',    'nst',    'dmin',
+    'gap',    'magType',    'depth',    'latitude',    'longitude',
+    'location',    'continent',    'country',    'year',    'month',
+    'day',    'hour',    'minute' , 'tsunami'
+]
+
+X = df[features]
+
+# ==================== Cell 9 ====================
+print("Training Magnitude Prediction Model...\n")
+
+# Features and Target
+X_magnitude = X
+y_magnitude = df["magnitude"]
+
+# Train Test Split
+X_train_magnitude, X_test_magnitude, y_train_magnitude, y_test_magnitude = train_test_split(
+    X_magnitude, y_magnitude,
+    test_size=0.2,
+    random_state=42
+)
+
+# Model
+magnitude_model = RandomForestRegressor(
+    n_estimators=100,
+    random_state=42
+)
+
+# Train
+magnitude_model.fit(X_train_magnitude, y_train_magnitude)
+
+# Prediction
+y_pred_magnitude = magnitude_model.predict(X_test_magnitude)
+
+# Evaluation
+score_magnitude = r2_score(y_test_magnitude, y_pred_magnitude)
+
+print(f"R² Score : {score_magnitude}")
+
+# ==================== Cell 10 ====================
+print("Training Significance Prediction Model...\n")
+
+# Features and Target
+X_sig = X
+y_sig = df['sig']
+
+# Train Test Split
+X_train_sig, X_test_sig, y_train_sig, y_test_sig = train_test_split(
+    X_sig, y_sig,
+    test_size=0.2,
+    random_state=42
+)
+
+# Model
+sig_model = RandomForestRegressor(
+    n_estimators=100,
+    random_state=42
+)
+
+# Train
+sig_model.fit(X_train_sig, y_train_sig)
+
+# Prediction
+y_pred = sig_model.predict(X_test_sig)
+
+# Evaluation
+score_sig = r2_score(y_test_sig, y_pred)
+
+print(f"R² Score : {score_sig}")
+
+# ==================== Cell 11 ====================
+print("Training Alert Prediction Model...\n")
+
+# Features and Target
+X_alert = X
+y_alert = df['alert']
+
+# Train Test Split
+X_train_alert, X_test_alert, y_train_alert, y_test_alert = train_test_split(
+    X_alert, y_alert,
+    test_size=0.2,
+    random_state=42
+)
+
+# Model
+alert_model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
+
+# Train
+alert_model.fit(X_train_alert, y_train_alert)
+
+# Prediction
+y_pred_alert = alert_model.predict(X_test_alert)
+
+# Evaluation
+score_alert = accuracy_score(y_test_alert, y_pred_alert)
+
+print(f"Accuracy : {score_alert}")
+
+# ==================== Cell 12 ====================
+print("Training Tsunami Prediction Model...\n")
+
+# Features and Target
+X_tsunami = X
+y_tsunami = df['tsunami']
+
+# Train Test Split
+X_train_tsunami, X_test_tsunami, y_train_tsunami, y_test_tsunami = train_test_split(
+    X_tsunami, y_tsunami,
+    test_size=0.2,
+    random_state=42
+)
+
+# Model
+tsunami_model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
+
+# Train
+tsunami_model.fit(X_train_tsunami, y_train_tsunami)
+
+# Prediction
+y_pred_tsunami = tsunami_model.predict(X_test_tsunami)
+
+# Evaluation
+score_tsunami = accuracy_score(y_test_tsunami, y_pred_tsunami)
+
+print(f"Accuracy : {score_tsunami}")
+
+# ==================== Cell 13 ====================
+models = {
+    "magnitude_model": magnitude_model,
+    "significance_model": sig_model,
+    "alert_model": alert_model,
+    "tsunami_model": tsunami_model,
+    "encoders": encoders
+}
+
+with open("Models/earthquake_models.pkl", "wb") as file:
+    pickle.dump(models, file)
+
+print("Model is created into the 'Models/' folder...")
+
+# ==================== Cell 14 ====================
+# User Inputs
+
+title_value = "M 7.8 - Central Turkey"
+
+continent_value = "Asia"
+country_value = "Turkiye"
+location_value = "Central Turkey"
+
+year = 2023
+month = 2
+day = 6
+hour = 1
+minute = 17
+
+latitude = 37.2012
+longitude = 36.9997
+
+depth = 17.925
+
+magType_value = "mww"
+
+cdi = 9
+mmi = 9
+
+net_value = "us"
+
+nst = 118
+
+dmin = 1.919
+
+gap = 32
+nst = 168
+
+dmin = 0.345
+
+gap = 24.8
+
+tsunami_value = 0  # 0 = No, 1 = Yes
+
+print("User input completed....")
+
+# ==================== Cell 15 ====================
+# Encode the categorical columns using the fitted encoders from training
+
+title = encoders["title"].transform([title_value])[0]
+continent = encoders["continent"].transform([continent_value])[0]
+country = encoders["country"].transform([country_value])[0]
+location = encoders["location"].transform([location_value])[0]
+magType = encoders["magType"].transform([magType_value])[0]
+net = encoders["net"].transform([net_value])[0]
+tsunami = encoders["tsunami"].transform([str(tsunami_value)])[0]
+
+print("User input Encoding is completed.")
+
+# ==================== Cell 16 ====================
+# Dataframe of the user input
+
+user_data = pd.DataFrame({
+    "title":[title],
+    "cdi":[cdi],
+    "mmi":[mmi],
+    "net":[net],
+    "nst":[nst],
+    "dmin":[dmin],
+    "gap":[gap],
+    "magType":[magType],
+    "depth":[depth],
+    "latitude":[latitude],
+    "longitude":[longitude],
+    "location":[location],
+    "continent":[continent],
+    "country":[country],
+    "year":[year],
+    "month":[month],
+    "day":[day],
+    "hour":[hour],
+    "minute":[minute],
+    "tsunami":[tsunami]
+})
+
+#Prediction of multiple models
+
+predicted_magnitude = magnitude_model.predict(user_data)[0]
+predicted_sig = sig_model.predict(user_data)[0]
+predicted_alert = alert_model.predict(user_data)[0]
+predicted_tsunami = tsunami_model.predict(user_data)[0]
+
+predicted_alert = encoders["alert"].inverse_transform([predicted_alert])[0]
+
+predicted_tsunami = encoders["tsunami"].inverse_transform([predicted_tsunami])[0]
+
+# ==================== Cell 17 ====================
+print("\n" + "=" * 50)
+print("      EARTHQUAKE PREDICTION REPORT")
+print("=" * 50)
+
+print(f"Predicted Magnitude     : {predicted_magnitude:.2f}")
+print(f"Predicted Significance  : {predicted_sig:.2f}")
+print(f"Predicted Alert Level   : {predicted_alert}")
+print(f"Predicted Tsunami       : {'Yes' if predicted_tsunami == 1 else 'No'}")
+
+print("=" * 50)
+
