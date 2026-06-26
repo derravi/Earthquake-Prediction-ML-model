@@ -3,7 +3,7 @@
 cdi → Community Determined Intensity
 Unit: Intensity Scale (0–12)
 
-mmi → Represents the Modified Mercalli Intensity, which measures the observed shaking and damage caused by the earthquake.
+mmi → Modified Mercalli Intensity
 Unit: Intensity Scale (I–XII or 1–12)
 
 alert → Represents the warning level issued for the earthquake.
@@ -12,13 +12,14 @@ Unit: Category (Green, Yellow, Orange, Red)
 tsunami → Indicates whether the earthquake generated a tsunami.
 Unit: Binary (0 = No, 1 = Yes)
 
-sig → Represents the overall significance score assigned to the earthquake.
+sig → The Significance it means the overall damage of the earthquake.
 Unit: Score (No Physical Unit)
 
 net → Represents the seismic network or organization that reported the earthquake.
 Unit: Text Code
 
 nst → Represents the number of seismic stations used to locate the earthquake.
+-> Its use to find the how many sesamic station is fell and masure the perticular earthwuake.
 Unit: Count (Number of Stations)
 
 dmin → Represents the distance from the earthquake to the nearest seismic station.
